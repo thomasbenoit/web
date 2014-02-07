@@ -6,10 +6,13 @@
 
 ?>
 <?php
-  if(isset($_POST) && !empty($_POST['activite']) && !empty($_POST['date'])){
-    if(!Activite::existe($_POST['date'])){
-      Activite::Add($_POST['activite'],$_POST['date']);
+  if(isset($_POST) && !empty($_POST['activite']) && !empty($_POST['date']) && !empty($_POST['heure'])){
+    if(!Activite::existe($_POST['date'],$_POST['heure'])){
+      Activite::Add($_POST['activite'],$_POST['date'],$_POST['heure']);
       header('Location:activiter.php');
+    }
+    else{
+      $erreur='La plage horaire est déjà prise';
     }
   }
 ?>
@@ -157,10 +160,17 @@ $( "#datepicker" ).datepicker();
           }
           
           echo ' </select>';
-          echo ' date <input name="date" type="text" id="datepicker">';
+          echo ' date <input name="date" type="text" id="datepicker"> ';
+
+          echo 'heure: <select  name="heure">';
+          for($i=8;$i<19;$i++) {
+            echo "<option value=\"$i:00:00\">$i:00:00</option>";
+          }
+          echo ' </select>';
+          //echo ' heure <input name="heure" type="text"> ';
               echo ' <button class="btn btn-primary" type="submit" name="submit">Ajouter</button>
 </form>';
-
+ if(isset($erreur)) echo '<button class="btn btn-warning" type="button">'.$erreur.'</button></br></br>';
 ?>
       <hr>
       <footer>
