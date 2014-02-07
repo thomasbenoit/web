@@ -125,11 +125,23 @@
 <div class="span12">
   <?php
   $q=array(':id' => $_SESSION['Auth']->getId());
-  $sql='SELECT idReservation, dateReservation, idActivite, idUtilisateurs FROM reservation WHERE idUtilisateurs=:id';
+  $sql='SELECT count(idReservation) as c FROM reservation WHERE idUtilisateurs=:id';
   $req=$cnx->prepare($sql);
   $req->execute($q);
   $res=$req->fetchAll();
+  $count=$res[0]['c'];
+  $parPage=10;
+  $cPage=1;
+  $nbPage=ceil($count/$parPage);
+  if(isset($_GET['page']) && $_GET['page']<=$nbPage){
+    $cPage=$_GET['page'];
+  }
+  $q=array(':id' => $_SESSION['Auth']->getId());
 
+  $sql='SELECT idReservation, dateReservation, idActivite, idUtilisateurs FROM reservation WHERE idUtilisateurs=:id and dateReservation>=NOW() ORDER BY dateReservation DESC LIMIT '.(($cPage-1)*$parPage).','.$parPage;
+  $req=$cnx->prepare($sql);
+  $req->execute($q);
+  $res=$req->fetchAll();
   if(Auth::islog()){
     echo '
 <h3>liste de vos activite</h3>
