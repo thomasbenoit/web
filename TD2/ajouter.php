@@ -1,15 +1,17 @@
 <?php
 	include_once('class/Auth.php');
-  include_once('class/Activiter.php');
+  include_once('class/Activite.php');
 	session_start();
 
-
+ if(!Auth::islog()){
+    header('Location:index.php');
+  }
 ?>
 <?php
   if(isset($_POST) && !empty($_POST['activite']) && !empty($_POST['date']) && !empty($_POST['heure'])){
     if(!Activite::existe($_POST['date'],$_POST['heure'])){
       Activite::Add($_POST['activite'],$_POST['date'],$_POST['heure']);
-      header('Location:activiter.php');
+      header('Location:activite.php');
     }
     else{
       $erreur='La plage horaire est déjà prise';
@@ -108,15 +110,10 @@ $( "#datepicker" ).datepicker();
         if(Auth::islog()){ 
             echo '<ul class="nav">
                           <li><a href="index.php">Acceuil</a></li>
-                          <li class="active"> <a href="activiter.php">Activite</a></li>
+                          <li class="active"> <a href="activite.php">Activité</a></li>
                         </ul>';
         }
-        else{
-        	echo ' <ul class="nav">
-              <li class="active"><a href="index.php">Acceuil</a></li>
         
-            </ul>';
-        }
         ?>
           </div><!--/.nav-collapse -->
         </div>

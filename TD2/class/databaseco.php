@@ -1,8 +1,8 @@
 <?php
-$server='info2';
-$user='rangeard';
-$pass='rangeard';
-$bdd='DBrangeard';
+$server='localhost';
+$user='root';
+$pass='';
+$bdd='dbrangeard';
 $port='3306';
 try{
 	$cnx=new PDO('mysql:host='.$server.';port='.$port.';dbname='.$bdd,$user,$pass);
@@ -10,6 +10,5 @@ try{
 catch(PDOException $e){
 	echo $e->getMessage();
 }
-
 
 ?>

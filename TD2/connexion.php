@@ -25,7 +25,7 @@ if(!empty($_POST)){
 		$res=$req->fetchAll();
 		if($actif==1){
 			$_SESSION['Auth']=new User($res[0]['idUtilisateurs']);
-			print_r($_SESSION);
+			header('Location:index.php');
 			
 		}
 	}

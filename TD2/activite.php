@@ -1,58 +1,16 @@
 <?php
 	include_once('class/Auth.php');
-	require_once('databaseco.php');
-		session_start();
-     if(Auth::islog()){
+	session_start();
+  if(!Auth::islog()){
     header('Location:index.php');
   }
-?>
-<?php
-	if(!empty($_POST) && strlen($_POST['pseudo'])>4 && filter_var($_POST['email'],FILTER_VALIDATE_EMAIL)&& strlen($_POST['password'])>6 && $_POST['password']==$_POST['repeatpassword']){
-		$pseudo=addslashes($_POST['pseudo']);	
-		$email=addslashes($_POST['email']);
-		$password=sha1($_POST['password']);
-		$stmt = $cnx->prepare("SELECT COUNT(*) FROM utilisateurs WHERE pseudoUtilisateurs = :pseudo");
-		$stmt->execute(array(':pseudo'=>$pseudo));
-		if ($stmt->fetchColumn() == 0) {
-			$stmt2 = $cnx->prepare("SELECT COUNT(*) FROM utilisateurs WHERE emailUtilisateurs = :email");
-			$stmt2->execute(array(':email'=>$email));
-				if ($stmt2->fetchColumn() == 0) {
-					$sql= 'INSERT INTO utilisateurs (pseudoUtilisateurs,emailUtilisateurs,mdpUtilisateurs) VALUES (:pseudo, :email, :password)';
-					$req=$cnx->prepare($sql);
-					$req->execute(array(':pseudo'=>$pseudo,':email'=>$email,':password'=>$password))or die(print_r($req->errorInfo()));
-					$confirmation="Votre compte activé";
-				}
-				else{
-					$erreuremailprise='Un compte est déjà associé a cette adresse mail';
-
-				}
-		}
-		else{
-			$erreurlogin='Nom d\'utilisateur deja utilisé';	
-		}
-	}
-	else{
-		if(!empty($_POST) && strlen($_POST['pseudo'])<4){
-			$erreurpseudo='Votre pseudo doit comporter au minimum 4 caractere';
-		}
-		if(!empty($_POST) && !filter_var($_POST['email'],FILTER_VALIDATE_EMAIL)){
-			$erreuremail='Votre email n\'est pas valide';
-		}
-		if(!empty($_POST) && strlen($_POST['password'])<6){		
-			$erreurpassword='le mot de passe doit comporter au minimum 6 caractere';	
-		}
-		if(!empty($_POST) && !($_POST['password']==$_POST['repeatpassword'])){
-			$erreurpasswordrepeat='Les mots de passe sont differents';	
-		}
-	}
 
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="utf-8">
-    <title>Projet tuteuré</title>
+    <title>TD2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -110,7 +68,6 @@
                 echo '	<a class="dropdown-toggle" data-toggle="dropdown" href="#">'.$_SESSION['Auth']->getPseudo().'<b class="caret"></b></a>';
                 echo '	<ul class="dropdown-menu">';
             	echo ' 		<li><a href="logout.php">Déconnexion</a></li>';
-            	
                 echo ' 	</ul>';
               	echo ' </li>';
             	echo '</ul>';
@@ -130,17 +87,11 @@
        <?php      
         if(Auth::islog()){ 
             echo '<ul class="nav">
-                          <li><a href="index.php">Acceuil</a></li>
-                         
+                          <li ><a href="index.php">Acceuil</a></li>
+                          <li class="active"> <a href="activite.php">Activité</a></li>
                         </ul>';
         }
-        else{
-        	echo ' <ul class="nav">
-              <li><a href="index.php">Acceuil</a></li>
-              <li class="active"><a href="inscription.php">Inscription</a></li>
-
-            </ul>';
-        }
+        
         ?>
           </div><!--/.nav-collapse -->
         </div>
@@ -150,30 +101,106 @@
 
 <div class="container-fluid">
       <div class="row-fluid">    
-        <div class="span4 offset4">
-          <?php if (!Auth::islog()){
+        <div class="span12">
+          <div class="hero-unit">
+            <?php
+            if(isset($_GET['message'])&& !empty($_GET['message'])){
+              echo htmlentities($_GET['message']);
+            }
+            else{
 
-      		echo '<form class="form-signin" action="inscription.php" method="POST">
-              <h2 class="form-signin-heading">Creer un compte</h2>
-              <input type="text" class="input-block-level" placeholder="Pseudo" name="pseudo">';
-               if(isset($erreurlogin))echo '<button class="btn btn-warning" type="button">'.$erreurlogin.'</button></br></br>';
-              echo'<input type="email" class="input-block-level" placeholder="Email" name="email">';
-              if(isset($erreuremailprise))  echo '<button class="btn btn-warning" type="button">'.$erreuremailprise.'</button></br></br>';
-             echo ' <input type="password" class="input-block-level" placeholder="Password" name="password">';
-                if(isset($erreurpassword)) echo  '<button class="btn btn-warning" type="button">'.$erreurpassword.'</button></br></br>';
-           	  echo '<input type="password" class="input-block-level" placeholder="Password" name="repeatpassword">';
-           if(isset($erreurpasswordrepeat)) echo '<button class="btn btn-warning" type="button">'.$erreurpasswordrepeat.'</button></br></br>';
-              echo '<button class="btn btn-large btn-primary" type="submit" name="submit">S\'inscire</button>
-            </form>';
-            if(isset($confirmation))echo '<button class="btn btn-success" type="button">'.$confirmation.'</button></br></br>';
-          }
-else{
-  header('Location:index.php');
-}
-?>
+           echo "<h1>Bonjour ";
+          if(Auth::islog()) echo $_SESSION['Auth']->getPseudo(); 
+        }
+          ?>
+          </div>
+
+
         </div><!--/span-->
       </div><!--/row-->
+ <div class="row-fluid">
+<div class="span12">
+  <?php
+  $q=array(':id' => $_SESSION['Auth']->getId());
+  $sql='SELECT count(idReservation) as c FROM reservation WHERE idUtilisateurs=:id and dateReservation>=NOW() ';
+  $req=$cnx->prepare($sql);
+  $req->execute($q);
+  $res=$req->fetchAll();
+  $count=$res[0]['c'];
+  $parPage=5;
+  $cPage=1;
+  
 
+  $nbPage=ceil($count/$parPage);
+
+  if(isset($_GET['page']) && $_GET['page']<=$nbPage){
+    $cPage=$_GET['page'];
+  }
+  $q=array(':id' => $_SESSION['Auth']->getId());
+
+  $sql='SELECT idReservation, dateReservation, idActivite, idUtilisateurs FROM reservation WHERE idUtilisateurs=:id and dateReservation>=NOW() ORDER BY dateReservation ASC LIMIT '.(($cPage-1)*$parPage).','.$parPage;
+  $req=$cnx->prepare($sql);
+  $req->execute($q);
+  $res=$req->fetchAll();
+  if(Auth::islog()){
+    echo '
+<h3>liste de vos activités</h3>
+<table class="table table-bordered table-striped">
+<thead>
+<tr>
+<th>Activité</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody>';
+foreach ($res as $key) {
+  extract($key);
+  $q=array(':id' => $idActivite);
+  $sql='SELECT nomActivite FROM activite WHERE idActivite=:id';
+  $req=$cnx->prepare($sql);
+  $req->execute($q);
+  $res=$req->fetchAll();
+  foreach ($res as $key) {
+    extract($key);
+  }
+  echo"
+
+<tr>
+<td>
+<span class=\"label label-info\">$nomActivite</span>
+</td>
+<td>
+<p> <span class=\"label\">$dateReservation</span> <a class=\"pull-right\" href=\"supprimer.php?id=$idReservation\"><i class=\"icon-trash\"></i></a> <p>
+</td>
+</tr>";
+}
+echo'
+</tbody>
+</table>
+<a href="ajouter.php">Ajouter une activité</a>
+</div>
+</div><!--/row-->
+';
+
+
+}
+?>
+<?php //pagination
+  if($nbPage>1){
+    echo ' <div class="pagination">
+    <ul>';
+    for($i=1;$i<=$nbPage;$i++) {
+      echo  "<li";
+      if($cPage==$i){
+        echo ' class="active"';
+      }
+      echo"><a href=\"activite.php?page=$i\">$i</a></li>";
+
+    }
+    echo ' </ul>
+    </div>';
+  }
+?>
       <hr>
       <footer>
         <p>&copy; IUT Orléans 2014</p>

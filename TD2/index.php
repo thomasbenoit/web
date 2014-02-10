@@ -116,13 +116,13 @@ if(!empty($_POST)){
         if(Auth::islog()){ 
             echo '<ul class="nav">
                           <li class="active"><a href="index.php">Acceuil</a></li>
-                          <li > <a href="activiter.php">Activite</a></li>
+                          <li > <a href="activite.php">Activité</a></li>
                         </ul>';
         }
         else{
         	echo ' <ul class="nav">
               <li class="active"><a href="index.php">Acceuil</a></li>
-        
+              <li><a href="inscription.php">inscription</a></li>
             </ul>';
         }
         ?>
