@@ -21,6 +21,7 @@
 			}
 
 		}
+
 		public static function Add ($idActiviter,$date,$heure){
 			global $cnx;
 			$datet=date("Y-m-d H:i:s",strtotime($date.$heure));
@@ -30,9 +31,18 @@
 			$req->execute($a2);
 	    	}
 
-	}
+		}
 
-
+		public static function Suppr($idActiviter,$date,$heure){
+			global $cnx;
+			$datet=date("Y-m-d H:i:s",strtotime($date.$heure));
+			if(existe($date,$heure)){
+				$a=array(':idU'=>$_SESSION['Auth']->getId(),':dater'=> date("Y-m-d H:i:s",strtotime($date.$heure)));
+				$sql='DELETE from reservation WHERE idUtilisateurs=:idU and dateReservation=:dater';
+				$req=$cnx->prepare($sql);
+				$req->execute($a);
+			}
+		}
 
 
 ?>
